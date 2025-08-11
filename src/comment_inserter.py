@@ -1,4 +1,4 @@
-# src/com# src/comment_inserter.py
+
 from docx.shared import RGBColor, Pt
 from docx.oxml import parse_xml
 
@@ -16,7 +16,7 @@ def insert_comment(paragraph, comment_text, color=(255,0,0), bold=True, italic=F
     run.font.italic = italic
     run.font.size = Pt(font_size)
 
-    # highlight background for visibility (yellow)
+ 
     try:
         highlight = parse_xml(r'<w:highlight xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" w:val="yellow"/>')
         run._element.rPr.append(highlight)
