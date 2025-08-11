@@ -1,0 +1,11 @@
+{
+  "file_name": "sample_input.docx",
+  "document_type": "Unknown",
+  "issues": [
+    {
+      "issue": "Failed to open .docx: Error reading DOCX file examples/sample_input.docx: Package not found at 'examples/sample_input.docx'",
+      "severity": "High"
+    }
+  ],
+  "reviewed_path": null
+}

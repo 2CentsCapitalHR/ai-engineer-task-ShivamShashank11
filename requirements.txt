@@ -1,0 +1,7 @@
+python-docx
+gradio
+pandas
+langchain     
+chromadb      
+gradio
+python-docx
