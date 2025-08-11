@@ -10,7 +10,7 @@ from .comment_inserter import insert_comment
 from .rag_engine import get_legal_reference
 from .file_utils import read_docx, write_docx
 
-# Patterns for detection
+
 AMBIGUOUS_PATTERNS = [
     r"\bmay\b",
     r"\bendeavour\b",
@@ -83,12 +83,11 @@ def _create_front_summary_and_merge(original_doc: Document, issues_by_par: List[
     checklist_result = checklist_result or {}
     new_doc = Document()
 
-    # Summary header
     hdr = new_doc.add_paragraph("---- REVIEW SUMMARY (ADGM Corporate Agent - MVP) ----")
     hdr.runs[0].bold = True
     hdr.runs[0].font.size = Pt(12)
 
-    # Checklist info
+    
     new_doc.add_paragraph(f"Detected process: {checklist_result.get('process','Unknown')}")
     new_doc.add_paragraph(f"Documents uploaded: {checklist_result.get('documents_uploaded',0)}")
     new_doc.add_paragraph(f"Required documents: {checklist_result.get('required_documents',0)}")
@@ -102,7 +101,7 @@ def _create_front_summary_and_merge(original_doc: Document, issues_by_par: List[
             else:
                 new_doc.add_paragraph(f" - {m}")
 
-    # Issues section
+    
     new_doc.add_paragraph("")
     new_doc.add_paragraph("Issues found:")
     if not issues_by_par:
@@ -116,7 +115,7 @@ def _create_front_summary_and_merge(original_doc: Document, issues_by_par: List[
                 new_doc.add_paragraph(f"   Legal Reference: {it['legal_reference']}")
             new_doc.add_paragraph("")
 
-    # Original document after page break
+   
     new_doc.add_page_break()
     for p in original_doc.paragraphs:
         if p.text is None:
@@ -125,7 +124,7 @@ def _create_front_summary_and_merge(original_doc: Document, issues_by_par: List[
     return new_doc
 
 def add_review_notes_and_save_doc(doc_obj: Document, original_path: str, output_dir: str, issues_by_par: List[Dict[str, Any]], checklist_result: Dict[str, Any]) -> str:
-    # Insert inline comments
+    
     for it in issues_by_par:
         para_idx = it.get("paragraph_index")
         comment_text = it.get("issue", "")
@@ -140,10 +139,10 @@ def add_review_notes_and_save_doc(doc_obj: Document, original_path: str, output_
             p = doc_obj.add_paragraph()
             insert_comment(p, comment_text)
 
-    # Merge with summary
+   
     merged_doc = _create_front_summary_and_merge(doc_obj, issues_by_par, checklist_result)
 
-    # Ensure output directory exists
+    
     os.makedirs(output_dir, exist_ok=True)
     base = os.path.splitext(os.path.basename(original_path))[0]
     reviewed_name = f"{base}_reviewed.docx"
@@ -170,7 +169,7 @@ def process_document(filepath: str, checklist_result: Dict[str, Any] = None, out
             "reviewed_path": None
         }
 
-    # Detect document type
+    
     fn = os.path.basename(filepath).lower()
     if "articles of association" in full_text.lower() or "articles" in fn:
         doc_type = "Articles of Association"
@@ -183,7 +182,7 @@ def process_document(filepath: str, checklist_result: Dict[str, Any] = None, out
     else:
         doc_type = "Unknown"
 
-    # Run checks
+    
     issues = []
     issues.extend(_find_jurisdiction_issues(full_text))
 
@@ -216,7 +215,7 @@ def process_document(filepath: str, checklist_result: Dict[str, Any] = None, out
             "legal_reference": get_legal_reference("numbered clauses")
         })
 
-    # Save reviewed doc
+   
     reviewed_path = None
     try:
         reviewed_path = add_review_notes_and_save_doc(
