@@ -24,7 +24,10 @@ pip install -r requirements.txt
 python app.py
 ```
 
-Open browser at http://localhost:7860 to use.
+Running on local URL: http://0.0.0.0:7860
+
+- Running on public URL: https://018e4daaa06f0d1e80.gradio.live
+  Open browser at http://localhost:7860 to use.
 
 Usage
 Upload one or more .docx files
