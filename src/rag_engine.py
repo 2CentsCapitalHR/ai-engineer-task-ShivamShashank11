@@ -1,13 +1,4 @@
-# src/rag_engine.py
-"""
-Local RAG engine for ADGM Corporate Agent.
 
-Behavior:
-- Loads plaintext reference files from ./legal_refs/*.txt
-- If scikit-learn available, builds TF-IDF + cosine similarity index to find best-matching snippets
-- Returns a short citation string and a float confidence score (0.0-1.0)
-- Falls back to STATIC_RULES when no refs or sklearn not available
-"""
 
 import os
 import glob
@@ -24,7 +15,7 @@ STATIC_RULES = {
     "numbered clauses": "ADGM Best Practice Templates — Use numbered clauses for clarity."
 }
 
-# reference dir (create folder ./legal_refs and place .txt files there)
+
 REF_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "legal_refs"))
 
 try:
@@ -37,8 +28,8 @@ except Exception:
 class LocalRAG:
     def __init__(self, ref_dir=REF_DIR):
         self.ref_dir = ref_dir
-        self.docs = []          # full text per file
-        self.doc_names = []     # filenames
+        self.docs = []        
+        self.doc_names = []     
         self.vectorizer = None
         self.doc_vectors = None
         self.use_sklearn = SKLEARN_AVAILABLE
@@ -85,33 +76,33 @@ class LocalRAG:
 
         q_low = q.lower()
 
-        # quick keyword -> static map
+
         for key, text in STATIC_RULES.items():
             if key in q_low:
-                # exact static hit gets full confidence
+              
                 return f"STATIC_RULE — {text}", 1.0
 
-        # if we have vectors, do semantic search
+        
         if self.use_sklearn and self.doc_vectors is not None and self.docs:
             try:
                 q_vec = self.vectorizer.transform([q])
                 sims = cosine_similarity(q_vec, self.doc_vectors)[0]
                 top_idx = int(sims.argmax())
                 score = float(sims[top_idx])
-                # apply threshold
+               
                 if score < 0.08:
-                    # low confidence - return the ambiguous STATIC_RULE
+                  
                     return f"STATIC_RULE — {STATIC_RULES.get('ambiguous','')}", 0.0
                 name = self.doc_names[top_idx]
                 excerpt = self.docs[top_idx][:600].replace("\n", " ").strip()
                 citation = f"{name} — {excerpt}..."
-                # normalize score (sims are already 0-1-ish for cosine; keep as is)
+                
                 return citation, float(round(score, 3))
             except Exception as e:
                 logger.exception("RAG: query failed: %s", e)
                 return f"STATIC_RULE — {STATIC_RULES.get('ambiguous','')}", 0.0
 
-        # fallback: return ambiguous static rule
+        
         return f"STATIC_RULE — {STATIC_RULES.get('ambiguous','')}", 0.0
 
     def citation_for_docname(self, doc_name: str) -> Tuple[str, float]:
@@ -121,18 +112,18 @@ class LocalRAG:
         if not doc_name:
             return "", 0.0
         name = doc_name.lower()
-        # exact / prefix or substring match in filenames
+        
         for i, fname in enumerate(self.doc_names):
             if fname.lower().startswith(name) or name in fname.lower():
                 excerpt = self.docs[i][:600].replace("\n", " ").strip()
                 return f"{fname} — {excerpt}...", 1.0
-        # fallback try static rules
+       
         for key, text in STATIC_RULES.items():
             if key in name:
                 return f"STATIC_RULE — {text}", 1.0
         return f"STATIC_RULE — {STATIC_RULES.get('ambiguous','')}", 0.0
 
-# single instance
+
 _rag = LocalRAG()
 
 def get_legal_reference(query: str) -> str:
@@ -144,7 +135,7 @@ def get_legal_reference(query: str) -> str:
         citation, score = _rag.query(query)
         if not citation:
             return ""
-        # append score for debugging / visibility
+        
         return f"{citation} (score={score})"
     except Exception:
         return STATIC_RULES.get("ambiguous", "")
